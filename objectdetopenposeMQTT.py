@@ -45,7 +45,7 @@ class ObjectPoseDetection:
 
         # Initialize MQTT client
         client = mqtt.Client()
-        client.connect(mqtt_broker, 8080, 60)  # Connect to the MQTT broker
+        client.connect("131.170.250.237", 8080, 60)  # Connect to the MQTT broker
 
         return {
             'cap': cap,
