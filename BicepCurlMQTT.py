@@ -1,0 +1,88 @@
+import cv2
+import mediapipe as mp
+import numpy as np
+import paho.mqtt.client as mqtt
+
+# Initialize Mediapipe components
+mp_drawing = mp.solutions.drawing_utils
+mp_pose = mp.solutions.pose
+
+# VIDEO FEED
+cap = cv2.VideoCapture(0)
+
+# Curl counter variables
+counter = 0
+stage = None
+prev_wrist_y = 0  # Previous wrist y-coordinate
+
+# MQTT Broker Configuration
+client = mqtt.Client("PoseCounter")
+client.connect("131.170.250.237", 8080, 60)
+
+# Setup mediapipe instance
+with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+    while cap.isOpened():
+        ret, frame = cap.read()
+
+        if not ret:
+            break
+
+        # Recolor image to RGB
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Make detection
+        results = pose.process(image)
+
+        # Recolor back to BGR
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+        try:
+            landmarks = results.pose_landmarks.landmark
+
+            # Get coordinates
+            wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                     landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+
+            # Calculate wrist velocity
+            wrist_y = wrist[1] * image.shape[0]
+            wrist_velocity = abs(wrist_y - prev_wrist_y)
+
+            # Update previous wrist y-coordinate
+            prev_wrist_y = wrist_y
+
+            # Curl counter logic
+            if wrist_velocity > 30:  # Adjust this threshold as needed
+                if stage != 'down':
+                    stage = 'down'
+                    counter += 1
+                    print(counter)
+                    # Publish the counter value to an MQTT topic
+                    client.publish("pose_counter", str(counter))
+            else:
+                stage = 'up'
+
+        except:
+            pass
+
+        # Render landmarks and connections
+        mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                  mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2, circle_radius=2),
+                                  mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2, circle_radius=2))
+
+        # Render curl counter
+        cv2.rectangle(image, (0, 0), (225, 73), (245, 117, 16), -1)
+        cv2.putText(image, 'REPS', (15, 12),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(image, str(counter),
+                    (10, 60),
+                    cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+
+        cv2.imshow('Mediapipe Feed', image)
+
+        if cv2.waitKey(10) & 0xFF == ord('q'):
+            break
+
+# Release the capture, disconnect from MQTT broker, and close the windows
+cap.release()
+cv2.destroyAllWindows()
+client.disconnect()
