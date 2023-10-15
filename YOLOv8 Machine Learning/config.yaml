@@ -1,0 +1,8 @@
+
+path: C:\Users\thoma\Desktop\object detection\trainmodel\data #dataset root directory (must be absolute path)
+train: images/train #train images (relative to 'path')
+val: images/train #val images (relative to 'path')
+
+# Classes
+names:
+  0: VR Headset
