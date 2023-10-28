@@ -32,12 +32,19 @@ The Semantic Scanner, featuring real-time object detection, is implemented using
 
 2. Deploy the scanner on a system with a strong GPU and a webcam/video camera for video analysis.
 
-3. Run the any script using the following command:
+3. Run the script using the following command:
    ```bash
    python ThomasMQTTSemanticScanner.py
 
-   python BicepCurlMQTT.py
+### OpenPose Bicep Curl Scanner
+1. Install the necessary dependencies:
+   - OpenCV
+   - Mediapipe
+   - Numpy
+   - Paho MQTT
 
-   python objectdetopenposeMQTT.py
-
+2. Deploy the scanner on a system with a strong GPU and a webcam/video camera for video analysis.
    
+3. Run the any script using the following command:
+   ```bash
+   python BicepCurlMQTT.py
