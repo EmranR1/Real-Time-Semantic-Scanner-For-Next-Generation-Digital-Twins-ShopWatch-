@@ -48,3 +48,7 @@ The Semantic Scanner, featuring real-time object detection, is implemented using
 3. Run the any script using the following command:
    ```bash
    python BicepCurlMQTT.py
+
+### Android Semantic Scanner
+The Semantic Scanning Application is already installed on an Android Device within the VXLab. The realtime_object.zip contains the code for Android Studio.
+   
